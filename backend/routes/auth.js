@@ -8,7 +8,7 @@ const JWT_SECRET = "this is my app";
 const fetchadmin = require('../middleware/fetchadmin');
 
 //create an admin using: POST "/api/auth/createadmin". Doesn't require login
-router.get('/createadmin',
+router.post('/createadmin',
 [
     body("name", "Enter a valid name").isLength({ min: 3 }),
     body("email", "Enter a valid email").isEmail(),
@@ -62,11 +62,11 @@ router.get('/createadmin',
 
 router.post(
     "/adminlogin",
-    [body("email", "Enter a valid email").isEmail(),
+    [
       body("password","Password can not be blank").exists()
   ],
     async (req, res) => {
-        const success = false;
+        var success = false;
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
         return res.status(400).json({ errors: errors.array() });
@@ -74,6 +74,7 @@ router.post(
       try {
           const {email,password} = req.body;
           let user = await Admin.findOne({email});
+          console.log(user);
           if(!user){
             success = false;
               return res.status(400).json({success, error: "Wrong Credentials"});
@@ -81,7 +82,7 @@ router.post(
           const passwordCompare = await bcrypt.compare(password,user.password);
           if(!passwordCompare){
             success = false;  
-            return res.status(400).json({success, error: "Wrong Credentials"});
+            return res.status(400).json({success, error: "incorrect password"});
           }
           const data = {
               user:{
